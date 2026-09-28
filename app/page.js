@@ -1,69 +1,126 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState } from "react";
+
+import VehicleSearch from "../components/veiculos/VehicleSearch";
+import VehicleFilters from "../components/veiculos/VehicleFilters";
+import VehicleCard from "../components/veiculos/VehicleCard";
+import VehicleDetailsModal from "../components/veiculos/VehicleDetailsModal";
+
+import styles from "../components/veiculos/veiculos.module.css";
+
+const veiculos = [
+  {
+    id: 1,
+    marca: "BMW",
+    modelo: "X6",
+    ano: 2024,
+    preco: 689900,
+    tipo: "SUV",
+    status: "Disponível",
+    tipoPreco: "À vista",
+  },
+  {
+    id: 2,
+    marca: "Mercedes-Benz",
+    modelo: "C 300 AMG Line",
+    ano: 2023,
+    preco: 379900,
+    tipo: "Sedan",
+    status: "Reservado",
+    tipoPreco: "Financiado",
+  },
+  {
+    id: 3,
+    marca: "Porsche",
+    modelo: "Cayenne",
+    ano: 2024,
+    preco: 799900,
+    tipo: "SUV",
+    status: "Vendido",
+    tipoPreco: "À vista",
+  },
+  {
+    id: 4,
+    marca: "Audi",
+    modelo: "RS e-tron GT",
+    ano: 2024,
+    preco: 899900,
+    tipo: "Esportivo",
+    status: "Disponível",
+    tipoPreco: "Financiado",
+  },
+];
 
 export default function Home() {
+  const [busca, setBusca] = useState("");
+  const [status, setStatus] = useState("");
+  const [vehicleSelecionado, setVehicleSelecionado] = useState(null);
+
+  const veiculosFiltrados = veiculos.filter((vehicle) => {
+    const termoBusca = busca.toLowerCase();
+
+    const correspondeBusca =
+      vehicle.marca.toLowerCase().includes(termoBusca) ||
+      vehicle.modelo.toLowerCase().includes(termoBusca) ||
+      vehicle.tipo.toLowerCase().includes(termoBusca);
+
+    const correspondeStatus =
+      status === "" || vehicle.status === status;
+
+    return correspondeBusca && correspondeStatus;
+  });
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.js</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <div className={styles.brand}>
+          <span className={styles.brandNext}>NEXT</span>
+        </div>
+      </header>
+
+      <section className={styles.content}>
+        <div className={styles.pageHeader}>
+          <h1 className={styles.pageTitle}>Veículos</h1>
+
+          <p className={styles.pageSubtitle}>
+            Encontre o veículo ideal para cada cliente.
           </p>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className={styles.filtersArea}>
+          <VehicleSearch
+            busca={busca}
+            setBusca={setBusca}
+          />
+
+          <VehicleFilters
+            status={status}
+            setStatus={setStatus}
+          />
         </div>
-      </main>
-    </div>
+
+        {veiculosFiltrados.length > 0 ? (
+          <div className={styles.vehicleGrid}>
+            {veiculosFiltrados.map((vehicle) => (
+              <VehicleCard
+                key={vehicle.id}
+                vehicle={vehicle}
+                onViewDetails={setVehicleSelecionado}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className={styles.emptyState}>
+            Nenhum veículo encontrado.
+          </div>
+        )}
+      </section>
+
+      <VehicleDetailsModal
+        vehicle={vehicleSelecionado}
+        onClose={() => setVehicleSelecionado(null)}
+      />
+    </main>
   );
 }
