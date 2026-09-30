@@ -5,17 +5,17 @@ export default function VehicleDetailsModal({
   onClose,
   onReserve,
   onCancelReservation,
+  onEdit,
   onDelete,
 }) {
   if (!vehicle) {
     return null;
   }
 
-  const precoFormatado =
-    vehicle.preco.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
+  const precoFormatado = (vehicle.preco ?? 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 
   const statusClass = {
     Disponível: styles.statusDisponivel,
@@ -24,21 +24,14 @@ export default function VehicleDetailsModal({
   };
 
   return (
-    <div
-      className={styles.modalOverlay}
-      onClick={onClose}
-    >
+    <div className={styles.modalOverlay} onClick={onClose}>
       <div
         className={styles.modal}
-        onClick={(event) =>
-          event.stopPropagation()
-        }
+        onClick={(event) => event.stopPropagation()}
       >
         <div className={styles.modalHeader}>
           <div>
-            <span className={styles.modalLabel}>
-              DETALHES DO VEÍCULO
-            </span>
+            <span className={styles.modalLabel}>DETALHES DO VEÍCULO</span>
 
             <h2 className={styles.modalTitle}>
               {vehicle.marca} {vehicle.modelo}
@@ -69,9 +62,7 @@ export default function VehicleDetailsModal({
           <span>Status</span>
 
           <span
-            className={`${styles.status} ${
-              statusClass[vehicle.status] || ""
-            }`}
+            className={`${styles.status} ${statusClass[vehicle.status] || ""}`}
           >
             {vehicle.status}
           </span>
@@ -79,20 +70,12 @@ export default function VehicleDetailsModal({
 
         <div className={styles.modalInfo}>
           <span>Tipo de preço</span>
-
-          <strong>
-            {vehicle.tipoPreco}
-          </strong>
+          <strong>{vehicle.tipoPreco}</strong>
         </div>
 
-        <div
-          className={`${styles.modalInfo} ${styles.modalPrice}`}
-        >
+        <div className={`${styles.modalInfo} ${styles.modalPrice}`}>
           <span>Preço</span>
-
-          <strong>
-            {precoFormatado}
-          </strong>
+          <strong>{precoFormatado}</strong>
         </div>
 
         <div className={styles.modalActions}>
@@ -104,37 +87,41 @@ export default function VehicleDetailsModal({
             Fechar
           </button>
 
-          {vehicle.status === "Disponível" && (
+          {vehicle.status === "Disponível" && onReserve && (
             <button
               className={styles.secondaryButton}
               type="button"
-              onClick={() =>
-                onReserve(vehicle)
-              }
+              onClick={() => onReserve(vehicle)}
             >
               Reservar
             </button>
           )}
 
-          {vehicle.status === "Reservado" && (
+          {vehicle.status === "Reservado" && onCancelReservation && (
             <button
               className={styles.secondaryButton}
               type="button"
-              onClick={() =>
-                onCancelReservation(vehicle)
-              }
+              onClick={() => onCancelReservation(vehicle)}
             >
               Cancelar reserva
             </button>
           )}
 
-          {vehicle.status !== "Vendido" && (
+          {onEdit && (
+            <button
+              className={styles.saveButton}
+              type="button"
+              onClick={() => onEdit(vehicle)}
+            >
+              Editar
+            </button>
+          )}
+
+          {vehicle.status !== "Vendido" && onDelete && (
             <button
               className={styles.deleteButton}
               type="button"
-              onClick={() =>
-                onDelete(vehicle)
-              }
+              onClick={() => onDelete(vehicle)}
             >
               Excluir veículo
             </button>

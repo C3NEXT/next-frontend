@@ -3,15 +3,18 @@ import styles from "./veiculos.module.css";
 export default function VehicleCard({
   vehicle,
   onViewDetails,
+  onDetails,
   onReserve,
   onCancelReservation,
+  onSell,
   onDelete,
 }) {
-  const precoFormatado =
-    vehicle.preco.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
+  const handleDetails = onViewDetails || onDetails;
+
+  const precoFormatado = (vehicle.preco ?? 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 
   const statusClass = {
     Disponível: styles.statusDisponivel,
@@ -27,9 +30,7 @@ export default function VehicleCard({
         </h3>
 
         <span
-          className={`${styles.status} ${
-            statusClass[vehicle.status] || ""
-          }`}
+          className={`${styles.status} ${statusClass[vehicle.status] || ""}`}
         >
           {vehicle.status}
         </span>
@@ -45,54 +46,63 @@ export default function VehicleCard({
           <span>Tipo</span>
           <strong>{vehicle.tipo}</strong>
         </p>
+
+        {vehicle.tipoPreco && (
+          <p className={styles.info}>
+            <span>Pagamento</span>
+            <strong>{vehicle.tipoPreco}</strong>
+          </p>
+        )}
       </div>
 
-      <p className={styles.price}>
-        {precoFormatado}
-      </p>
+      <p className={styles.price}>{precoFormatado}</p>
 
       <div className={styles.cardActions}>
-        <button
-          className={styles.detailsButton}
-          type="button"
-          onClick={() =>
-            onViewDetails(vehicle)
-          }
-        >
-          Ver detalhes
-        </button>
+        {handleDetails && (
+          <button
+            className={styles.detailsButton}
+            type="button"
+            onClick={() => handleDetails(vehicle)}
+          >
+            Ver detalhes
+          </button>
+        )}
 
-        {vehicle.status === "Disponível" && (
+        {vehicle.status === "Disponível" && onReserve && (
           <button
             className={styles.secondaryButton}
             type="button"
-            onClick={() =>
-              onReserve(vehicle)
-            }
+            onClick={() => onReserve(vehicle)}
           >
             Reservar
           </button>
         )}
 
-        {vehicle.status === "Reservado" && (
+        {vehicle.status === "Reservado" && onCancelReservation && (
           <button
             className={styles.secondaryButton}
             type="button"
-            onClick={() =>
-              onCancelReservation(vehicle)
-            }
+            onClick={() => onCancelReservation(vehicle)}
           >
             Cancelar reserva
           </button>
         )}
 
-        {vehicle.status !== "Vendido" && (
+        {vehicle.status !== "Vendido" && onSell && (
+          <button
+            className={styles.saveButton}
+            type="button"
+            onClick={() => onSell(vehicle)}
+          >
+            Vender
+          </button>
+        )}
+
+        {vehicle.status !== "Vendido" && onDelete && (
           <button
             className={styles.deleteCardButton}
             type="button"
-            onClick={() =>
-              onDelete(vehicle)
-            }
+            onClick={() => onDelete(vehicle)}
           >
             Excluir
           </button>
