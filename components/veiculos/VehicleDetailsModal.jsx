@@ -1,14 +1,27 @@
 import styles from "./veiculos.module.css";
 
-export default function VehicleDetailsModal({ vehicle, onClose }) {
+export default function VehicleDetailsModal({
+  vehicle,
+  onClose,
+  onReserve,
+  onCancelReservation,
+  onDelete,
+}) {
   if (!vehicle) {
     return null;
   }
 
-  const precoFormatado = vehicle.preco.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
+  const precoFormatado =
+    vehicle.preco.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+
+  const statusClass = {
+    Disponível: styles.statusDisponivel,
+    Reservado: styles.statusReservado,
+    Vendido: styles.statusVendido,
+  };
 
   return (
     <div
@@ -17,7 +30,9 @@ export default function VehicleDetailsModal({ vehicle, onClose }) {
     >
       <div
         className={styles.modal}
-        onClick={(event) => event.stopPropagation()}
+        onClick={(event) =>
+          event.stopPropagation()
+        }
       >
         <div className={styles.modalHeader}>
           <div>
@@ -52,17 +67,78 @@ export default function VehicleDetailsModal({ vehicle, onClose }) {
 
         <div className={styles.modalInfo}>
           <span>Status</span>
-          <strong>{vehicle.status}</strong>
+
+          <span
+            className={`${styles.status} ${
+              statusClass[vehicle.status] || ""
+            }`}
+          >
+            {vehicle.status}
+          </span>
         </div>
 
         <div className={styles.modalInfo}>
           <span>Tipo de preço</span>
-          <strong>{vehicle.tipoPreco}</strong>
+
+          <strong>
+            {vehicle.tipoPreco}
+          </strong>
         </div>
 
-        <div className={`${styles.modalInfo} ${styles.modalPrice}`}>
+        <div
+          className={`${styles.modalInfo} ${styles.modalPrice}`}
+        >
           <span>Preço</span>
-          <strong>{precoFormatado}</strong>
+
+          <strong>
+            {precoFormatado}
+          </strong>
+        </div>
+
+        <div className={styles.modalActions}>
+          <button
+            className={styles.cancelButton}
+            type="button"
+            onClick={onClose}
+          >
+            Fechar
+          </button>
+
+          {vehicle.status === "Disponível" && (
+            <button
+              className={styles.secondaryButton}
+              type="button"
+              onClick={() =>
+                onReserve(vehicle)
+              }
+            >
+              Reservar
+            </button>
+          )}
+
+          {vehicle.status === "Reservado" && (
+            <button
+              className={styles.secondaryButton}
+              type="button"
+              onClick={() =>
+                onCancelReservation(vehicle)
+              }
+            >
+              Cancelar reserva
+            </button>
+          )}
+
+          {vehicle.status !== "Vendido" && (
+            <button
+              className={styles.deleteButton}
+              type="button"
+              onClick={() =>
+                onDelete(vehicle)
+              }
+            >
+              Excluir veículo
+            </button>
+          )}
         </div>
       </div>
     </div>
