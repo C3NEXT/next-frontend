@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Parse from "@/lib/parse";
 
 const paths = {
@@ -96,6 +96,423 @@ function Field({
         autoComplete={autoComplete}
       />
     </label>
+  );
+}
+
+// ============================================
+// PRIMEIRO BLOCO — VEÍCULOS
+// Busca + Filtro + Cards + Detalhes
+// ============================================
+
+const STATUS_OPTIONS = [
+  "Disponível",
+  "Reservado",
+  "Vendido",
+];
+
+const statusClass = (status) =>
+  `status-${String(status)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")}`;
+
+const money = (value) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  }).format(value ?? 0);
+
+
+// ============================================
+// CARD DO VEÍCULO
+// ============================================
+
+function VehicleCard({
+  vehicle,
+  onSell,
+  onDetails,
+  onReserve,
+  onCancelReservation,
+}) {
+  return (
+    <article className="vehicle-card">
+
+      <div className="vc-top">
+
+        <span className="car-thumb">
+          <Icon
+            name="car"
+            size={20}
+          />
+        </span>
+
+        <span
+          className={`status ${statusClass(
+            vehicle.status
+          )}`}
+        >
+          {vehicle.status}
+        </span>
+
+      </div>
+
+
+      <div className="vc-brand">
+        {vehicle.marca}
+      </div>
+
+
+      <h3 className="vc-model">
+        {vehicle.modelo}
+      </h3>
+
+
+      <div className="vc-specs">
+
+        <div>
+          <span>ANO</span>
+
+          <strong>
+            {vehicle.ano}
+          </strong>
+        </div>
+
+
+        <div>
+          <span>TIPO</span>
+
+          <strong>
+            {vehicle.tipo}
+          </strong>
+        </div>
+
+
+        <div>
+          <span>PAGAMENTO</span>
+
+          <strong>
+            {vehicle.tipoPreco}
+          </strong>
+        </div>
+
+      </div>
+
+
+      <div className="vc-price">
+
+        <span>PREÇO</span>
+
+        <strong>
+          {money(vehicle.preco)}
+        </strong>
+
+      </div>
+
+
+      <div className="vc-actions">
+
+        {/* VISUALIZAR DETALHES */}
+        <Button
+          className="secondary"
+          onClick={() =>
+            onDetails(vehicle)
+          }
+        >
+          Ver detalhes
+        </Button>
+
+
+        {/* RESERVAR */}
+        {vehicle.status ===
+          "Disponível" && (
+          <Button
+            className="secondary"
+            onClick={() =>
+              onReserve(vehicle)
+            }
+          >
+            Reservar
+          </Button>
+        )}
+
+
+        {/* CANCELAR RESERVA */}
+        {vehicle.status ===
+          "Reservado" && (
+          <Button
+            className="secondary"
+            onClick={() =>
+              onCancelReservation(
+                vehicle
+              )
+            }
+          >
+            Cancelar reserva
+          </Button>
+        )}
+
+
+        {/* VENDER */}
+        {vehicle.status !==
+        "Vendido" ? (
+          <Button
+            className="primary"
+            onClick={() =>
+              onSell(vehicle)
+            }
+          >
+            Vender
+          </Button>
+        ) : (
+          <Button
+            className="secondary"
+            disabled
+          >
+            Vendido
+          </Button>
+        )}
+
+      </div>
+
+    </article>
+  );
+}
+
+
+// ============================================
+// GRID / LISTAGEM DE VEÍCULOS
+// ============================================
+
+function VehicleGrid({
+  vehicles,
+  onSell,
+  onDetails,
+  onReserve,
+  onCancelReservation,
+}) {
+
+  if (vehicles.length === 0) {
+    return (
+      <div className="table-card">
+
+        <div className="empty">
+          Nenhum veículo encontrado.
+        </div>
+
+      </div>
+    );
+  }
+
+
+  return (
+    <div className="vehicle-grid">
+
+      {vehicles.map((vehicle) => (
+
+        <VehicleCard
+          key={vehicle.id}
+          vehicle={vehicle}
+          onSell={onSell}
+          onDetails={onDetails}
+          onReserve={onReserve}
+          onCancelReservation={
+            onCancelReservation
+          }
+        />
+
+      ))}
+
+    </div>
+  );
+}
+
+
+// ============================================
+// MODAL DE DETALHES DO VEÍCULO
+// ============================================
+
+function VehicleDetailsModal({
+  vehicle,
+  onClose,
+  onEdit,
+  onDelete,
+  onReserve,
+  onCancelReservation,
+}) {
+
+  const rows = [
+
+    [
+      "Marca",
+      vehicle.marca,
+    ],
+
+    [
+      "Modelo",
+      vehicle.modelo,
+    ],
+
+    [
+      "Ano",
+      vehicle.ano,
+    ],
+
+    [
+      "Tipo",
+      vehicle.tipo,
+    ],
+
+    [
+      "Pagamento",
+      vehicle.tipoPreco,
+    ],
+
+    [
+      "Preço",
+      money(vehicle.preco),
+    ],
+
+    [
+      "Status",
+      vehicle.status,
+    ],
+
+  ];
+
+
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={onClose}
+    >
+
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        onMouseDown={(e) =>
+          e.stopPropagation()
+        }
+      >
+
+        {/* CABEÇALHO */}
+
+        <div className="modal-top">
+
+          <div>
+
+            <div className="eyebrow">
+              DETALHES
+            </div>
+
+            <h2>
+              {vehicle.marca}{" "}
+              {vehicle.modelo}
+            </h2>
+
+          </div>
+
+
+          <Button
+            className="icon-button"
+            onClick={onClose}
+          >
+            <Icon name="close" />
+          </Button>
+
+        </div>
+
+
+        {/* INFORMAÇÕES */}
+
+        <div className="detail-list">
+
+          {rows.map(
+            ([key, value]) => (
+
+              <div
+                className="detail-row"
+                key={key}
+              >
+
+                <span>
+                  {key}
+                </span>
+
+                <strong>
+                  {value}
+                </strong>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+
+        {/* AÇÕES */}
+
+        <div className="modal-actions">
+
+          <Button
+            className="danger"
+            onClick={() =>
+              onDelete(vehicle)
+            }
+          >
+            Excluir
+          </Button>
+
+
+          {vehicle.status ===
+            "Disponível" && (
+
+            <Button
+              className="secondary"
+              onClick={() =>
+                onReserve(vehicle)
+              }
+            >
+              Reservar
+            </Button>
+
+          )}
+
+
+          {vehicle.status ===
+            "Reservado" && (
+
+            <Button
+              className="secondary"
+              onClick={() =>
+                onCancelReservation(
+                  vehicle
+                )
+              }
+            >
+              Cancelar reserva
+            </Button>
+
+          )}
+
+
+          <Button
+            className="primary"
+            onClick={() =>
+              onEdit(vehicle)
+            }
+          >
+            Editar
+          </Button>
+
+        </div>
+
+      </div>
+
+    </div>
   );
 }
 
@@ -365,6 +782,326 @@ export function AuthGate({
     />
   );
 }
+
+
+// ==========================================================
+// TRECHOS PARA COLAR DENTRO DO DASHBOARD
+// (usam hooks/estados/JSX, então só funcionam dentro do componente;
+//  ficam comentados para não quebrar o arquivo)
+// ==========================================================
+
+// 1) ESTADOS + FILTRO + CARREGAMENTO — colar dentro do componente Dashboard,
+//    junto com os outros useState/useEffect (mantendo o useEffect das outras abas,
+//    o ramo "Veículos" abaixo deve entrar nele)
+//
+// // ============================================
+// // ESTADOS DO PRIMEIRO BLOCO
+// // ============================================
+//
+// const [query, setQuery] =
+//   useState("");
+//
+// const [vehicles, setVehicles] =
+//   useState([]);
+//
+// const [
+//   detailsTarget,
+//   setDetailsTarget,
+// ] = useState(null);
+//
+// const [
+//   statusFilter,
+//   setStatusFilter,
+// ] = useState("Todos");
+//
+//
+// // ============================================
+// // FILTRO DOS VEÍCULOS
+// // ============================================
+//
+// const visibleVehicles =
+//   useMemo(
+//     () =>
+//       statusFilter === "Todos"
+//         ? vehicles
+//         : vehicles.filter(
+//             (vehicle) =>
+//               vehicle.status ===
+//               statusFilter
+//           ),
+//     [
+//       vehicles,
+//       statusFilter,
+//     ]
+//   );
+//
+//
+// // ============================================
+// // CARREGAR VEÍCULOS
+// // ============================================
+//
+// useEffect(() => {
+//
+//   if (!authenticated) return;
+//
+//   let cancelado = false;
+//
+//   setLoading(true);
+//   setError(null);
+//
+//
+//   async function carregar() {
+//
+//     try {
+//
+//       if (
+//         active ===
+//         "Veículos"
+//       ) {
+//
+//         const result =
+//           await Parse.Cloud.run(
+//             "listVehicles",
+//             {
+//               busca: query,
+//             }
+//           );
+//
+//
+//         if (!cancelado) {
+//
+//           setVehicles(
+//             result
+//           );
+//
+//         }
+//
+//       }
+//
+//     } catch (err) {
+//
+//       if (!cancelado) {
+//
+//         setError(
+//           err?.message ??
+//             "Erro ao carregar dados."
+//         );
+//
+//       }
+//
+//     } finally {
+//
+//       if (!cancelado) {
+//
+//         setLoading(false);
+//
+//       }
+//
+//     }
+//
+//   }
+//
+//
+//   carregar();
+//
+//
+//   return () => {
+//
+//     cancelado = true;
+//
+//   };
+//
+// }, [
+//   authenticated,
+//   active,
+//   query,
+//   refreshKey,
+// ]);
+
+// 2) TELA DE VEÍCULOS — colar no JSX do Dashboard, no lugar do bloco {active === "Veículos" && (...)} atual
+//
+// {/* ============================================ */}
+// {/* TELA DE VEÍCULOS                             */}
+// {/* ============================================ */}
+//
+// {active === "Veículos" && (
+//
+//   <>
+//
+//     {/* CABEÇALHO */}
+//
+//     <div className="page-heading compact">
+//
+//       <div>
+//
+//         <div className="eyebrow">
+//           INVENTÁRIO
+//         </div>
+//
+//         <h1>
+//           Veículos
+//         </h1>
+//
+//         <p>
+//           {vehicles.length}{" "}
+//           veículos cadastrados
+//           na sua operação.
+//         </p>
+//
+//       </div>
+//
+//     </div>
+//
+//
+//     {/* BUSCA + FILTRO */}
+//
+//     <div className="filter-row">
+//
+//       {/* CAMPO DE BUSCA */}
+//
+//       <div className="search wide">
+//
+//         <Icon
+//           name="search"
+//           size={19}
+//         />
+//
+//         <input
+//           aria-label="Buscar veículo"
+//           placeholder="Busque por marca, modelo ou tipo..."
+//           value={query}
+//           onChange={(e) =>
+//             setQuery(
+//               e.target.value
+//             )
+//           }
+//         />
+//
+//       </div>
+//
+//
+//       {/* FILTRO DE STATUS */}
+//
+//       <label className="status-filter">
+//
+//         <span>
+//           STATUS
+//         </span>
+//
+//         <select
+//           value={statusFilter}
+//           onChange={(e) =>
+//             setStatusFilter(
+//               e.target.value
+//             )
+//           }
+//         >
+//
+//           {[
+//             "Todos",
+//             ...STATUS_OPTIONS,
+//           ].map((status) => (
+//
+//             <option
+//               key={status}
+//               value={status}
+//             >
+//               {status}
+//             </option>
+//
+//           ))}
+//
+//         </select>
+//
+//       </label>
+//
+//     </div>
+//
+//
+//     {/* QUANTIDADE DE RESULTADOS */}
+//
+//     <div className="results-count">
+//
+//       {visibleVehicles.length}{" "}
+//       resultados
+//
+//     </div>
+//
+//
+//     {/* CARDS */}
+//
+//     <VehicleGrid
+//       vehicles={
+//         visibleVehicles
+//       }
+//
+//       onSell={
+//         openSellModal
+//       }
+//
+//       onDetails={
+//         setDetailsTarget
+//       }
+//
+//       onReserve={
+//         reserveVehicle
+//       }
+//
+//       onCancelReservation={
+//         cancelReservation
+//       }
+//     />
+//
+//   </>
+//
+// )}
+
+// 3) MODAL DO VEÍCULO SELECIONADO — colar no JSX do Dashboard, no lugar do bloco {detailsTarget && ...} atual
+//
+// {/* ============================================ */}
+// {/* MODAL DO VEÍCULO SELECIONADO                 */}
+// {/* ============================================ */}
+//
+// {detailsTarget &&
+//   !vehicleModal &&
+//   !deleteTarget && (
+//
+//     <VehicleDetailsModal
+//
+//       vehicle={
+//         detailsTarget
+//       }
+//
+//       onClose={() =>
+//         setDetailsTarget(
+//           null
+//         )
+//       }
+//
+//       onEdit={(vehicle) =>
+//         setVehicleModal({
+//           mode: "edit",
+//           vehicle,
+//         })
+//       }
+//
+//       onDelete={(vehicle) =>
+//         setDeleteTarget(
+//           vehicle
+//         )
+//       }
+//
+//       onReserve={
+//         reserveVehicle
+//       }
+//
+//       onCancelReservation={
+//         cancelReservation
+//       }
+//
+//     />
+//
+//   )}
 
 export default function Page() {
   const [
