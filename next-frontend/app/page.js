@@ -516,6 +516,413 @@ function VehicleDetailsModal({
   );
 }
 
+// ============================================
+// MODAL — CADASTRO / EDIÇÃO DE VEÍCULO
+// ============================================
+
+function VehicleFormModal({
+  mode = "create",
+  vehicle = null,
+  onClose,
+  onSubmit,
+  loading = false,
+}) {
+  const isEdit = mode === "edit";
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(
+      event.currentTarget
+    );
+
+    onSubmit({
+      marca: String(
+        formData.get("marca") ?? ""
+      ).trim(),
+
+      modelo: String(
+        formData.get("modelo") ?? ""
+      ).trim(),
+
+      ano: Number(
+        formData.get("ano")
+      ),
+
+      tipo: String(
+        formData.get("tipo") ?? ""
+      ).trim(),
+
+      tipoPreco: String(
+        formData.get("tipoPreco") ?? ""
+      ).trim(),
+
+      preco: Number(
+        formData.get("preco")
+      ),
+
+      status: String(
+        formData.get("status") ?? "Disponível"
+      ),
+    });
+  };
+
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={onClose}
+    >
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        onMouseDown={(e) =>
+          e.stopPropagation()
+        }
+      >
+
+        {/* CABEÇALHO */}
+
+        <div className="modal-top">
+
+          <div>
+            <div className="eyebrow">
+              {isEdit
+                ? "EDITAR VEÍCULO"
+                : "NOVO VEÍCULO"}
+            </div>
+
+            <h2>
+              {isEdit
+                ? "Editar veículo"
+                : "Cadastrar veículo"}
+            </h2>
+          </div>
+
+          <Button
+            className="icon-button"
+            onClick={onClose}
+            disabled={loading}
+          >
+            <Icon name="close" />
+          </Button>
+
+        </div>
+
+
+        {/* FORMULÁRIO */}
+
+        <form
+          className="vehicle-form"
+          onSubmit={handleSubmit}
+        >
+
+          {/* MARCA */}
+
+          <label className="field">
+            <span>Marca</span>
+
+            <input
+              name="marca"
+              type="text"
+              defaultValue={
+                vehicle?.marca ?? ""
+              }
+              placeholder="Ex.: Toyota"
+              required
+            />
+          </label>
+
+
+          {/* MODELO */}
+
+          <label className="field">
+            <span>Modelo</span>
+
+            <input
+              name="modelo"
+              type="text"
+              defaultValue={
+                vehicle?.modelo ?? ""
+              }
+              placeholder="Ex.: Corolla"
+              required
+            />
+          </label>
+
+
+          {/* ANO */}
+
+          <label className="field">
+            <span>Ano</span>
+
+            <input
+              name="ano"
+              type="number"
+              min="1900"
+              max="2100"
+              defaultValue={
+                vehicle?.ano ?? ""
+              }
+              placeholder="Ex.: 2025"
+              required
+            />
+          </label>
+
+
+          {/* TIPO */}
+
+          <label className="field">
+            <span>Tipo</span>
+
+            <select
+              name="tipo"
+              defaultValue={
+                vehicle?.tipo ?? ""
+              }
+              required
+            >
+              <option value="">
+                Selecione o tipo
+              </option>
+
+              <option value="Sedan">
+                Sedan
+              </option>
+
+              <option value="SUV">
+                SUV
+              </option>
+
+              <option value="Hatch">
+                Hatch
+              </option>
+
+              <option value="Pickup">
+                Pickup
+              </option>
+
+              <option value="Esportivo">
+                Esportivo
+              </option>
+
+              <option value="Conversível">
+                Conversível
+              </option>
+
+              <option value="Outro">
+                Outro
+              </option>
+            </select>
+          </label>
+
+
+          {/* TIPO DE PAGAMENTO */}
+
+          <label className="field">
+            <span>Pagamento</span>
+
+            <select
+              name="tipoPreco"
+              defaultValue={
+                vehicle?.tipoPreco ?? ""
+              }
+              required
+            >
+              <option value="">
+                Selecione
+              </option>
+
+              <option value="À vista">
+                À vista
+              </option>
+
+              <option value="Financiamento">
+                Financiamento
+              </option>
+
+              <option value="À vista / Financiamento">
+                À vista / Financiamento
+              </option>
+            </select>
+          </label>
+
+
+          {/* PREÇO */}
+
+          <label className="field">
+            <span>Preço</span>
+
+            <input
+              name="preco"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={
+                vehicle?.preco ?? ""
+              }
+              placeholder="Ex.: 120000"
+              required
+            />
+          </label>
+
+
+          {/* STATUS */}
+
+          <label className="field">
+            <span>Status</span>
+
+            <select
+              name="status"
+              defaultValue={
+                vehicle?.status ??
+                "Disponível"
+              }
+              required
+            >
+              {STATUS_OPTIONS.map(
+                (status) => (
+                  <option
+                    key={status}
+                    value={status}
+                  >
+                    {status}
+                  </option>
+                )
+              )}
+            </select>
+          </label>
+
+
+          {/* AÇÕES */}
+
+          <div className="modal-actions">
+
+            <Button
+              className="secondary"
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancelar
+            </Button>
+
+            <Button
+              className="primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading
+                ? "Salvando..."
+                : isEdit
+                  ? "Salvar alterações"
+                  : "Cadastrar veículo"}
+            </Button>
+
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// MODAL — CONFIRMAÇÃO DE EXCLUSÃO
+// ============================================
+
+function ConfirmModal({
+  title = "Excluir veículo?",
+  message = "Tem certeza que deseja excluir este veículo? Essa ação não poderá ser desfeita.",
+  onClose,
+  onConfirm,
+  loading = false,
+}) {
+  return (
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={onClose}
+    >
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        onMouseDown={(e) =>
+          e.stopPropagation()
+        }
+      >
+
+        {/* CABEÇALHO */}
+
+        <div className="modal-top">
+
+          <div>
+            <div className="eyebrow">
+              CONFIRMAÇÃO
+            </div>
+
+            <h2 id="confirm-modal-title">
+              {title}
+            </h2>
+          </div>
+
+          <Button
+            className="icon-button"
+            onClick={onClose}
+            disabled={loading}
+          >
+            <Icon name="close" />
+          </Button>
+
+        </div>
+
+
+        {/* MENSAGEM */}
+
+        <div className="confirm-content">
+
+          <p>
+            {message}
+          </p>
+
+        </div>
+
+
+        {/* AÇÕES */}
+
+        <div className="modal-actions">
+
+          <Button
+            className="secondary"
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            className="danger"
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {loading
+              ? "Excluindo..."
+              : "Excluir veículo"}
+          </Button>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 export function AuthScreen({
   mode,
   setMode,
