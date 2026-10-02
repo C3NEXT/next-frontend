@@ -1347,6 +1347,7 @@ function Dashboard({ authenticated }) {
               </div>
             </>
           )}
+          
 
           {active === "Usuários" && (
             <>
@@ -1373,7 +1374,7 @@ function Dashboard({ authenticated }) {
               <div className="vehicle-grid">
                 {usuarios.length === 0 ? (
                   <div className="table-card">
-                    <div className="empty">Nenhum usuário cadastrado.</div>
+                    <div className="empty">Nenhum usuário está cadastrado.</div>
                   </div>
                 ) : (
                   usuarios.map((user, index) => (
@@ -1392,6 +1393,7 @@ function Dashboard({ authenticated }) {
             </>
           )}
         </div>
+
 
         {vehicleModal && (
           <VehicleFormModal
