@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Parse from "@/lib/parse";
+import Parse from "../lib/parse";
 import Sidebar from "./components/Sidebar";
 import DashboardOverview from "./components/DashboardOverview";
 
