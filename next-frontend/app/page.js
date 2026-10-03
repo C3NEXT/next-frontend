@@ -1121,38 +1121,58 @@ function Dashboard({ authenticated }) {
 
     try {
       if (vehicleModal.mode === "edit") {
-        await Parse.Cloud.run("updateVehicle", {
-          id: vehicleModal.vehicle.id,
+        const targetId = vehicleModal.vehicle?.id || vehicleModal.vehicle?.objectId;
 
-          ...vehicleData,
+        await Parse.Cloud.run("updateVehicle", {
+          vehicleId: targetId,
+          marca: vehicleData.marca,
+          modelo: vehicleData.modelo,
+          ano: Number(vehicleData.ano),
+          preco: Number(vehicleData.preco),
+          tipo: vehicleData.tipo,
+          tipoPreco: vehicleData.tipoPreco,
+          status: vehicleData.status || "Disponível",
         });
       } else {
-        await Parse.Cloud.run("createVehicle", vehicleData);
+        await Parse.Cloud.run("createVehicle", {
+          marca: vehicleData.marca,
+          modelo: vehicleData.modelo,
+          ano: Number(vehicleData.ano),
+          preco: Number(vehicleData.preco),
+          tipo: vehicleData.tipo,
+          tipoPreco: vehicleData.tipoPreco,
+          status: vehicleData.status || "Disponível",
+        });
       }
 
       setVehicleModal(null);
       setDetailsTarget(null);
       setActive("Veículos");
-
       setRefreshKey((key) => key + 1);
     } catch (err) {
+      console.error("Erro ao salvar:", err);
       setError(err?.message ?? "Erro ao salvar veículo.");
     }
   };
 
   const confirmDeleteVehicle = async () => {
+    if (!deleteTarget) return;
+
     try {
+      setError(null);
+
+      const targetId = deleteTarget.id || deleteTarget.objectId;
+
       await Parse.Cloud.run("deleteVehicle", {
-        id: deleteTarget.id,
+        vehicleId: targetId,
       });
 
       setDeleteTarget(null);
       setDetailsTarget(null);
-
       setRefreshKey((key) => key + 1);
     } catch (err) {
       setDeleteTarget(null);
-
+      console.error("Erro ao excluir veículo:", err);
       setError(err?.message ?? "Erro ao excluir veículo.");
     }
   };
